@@ -4,4 +4,5 @@ composer.lock
 .DS_Store
 .idea
 phpunit.xml
+.php_cs.cache
 .phpunit.result.cache

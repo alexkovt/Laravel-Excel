@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\FromGenerator;
 use Maatwebsite\Excel\Concerns\FromIterator;
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\FromScout;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -218,6 +219,10 @@ class Sheet
             if ($sheetExport instanceof FromGenerator) {
                 $this->fromGenerator($sheetExport);
             }
+
+            if ($sheetExport instanceof FromScout) {
+                $this->fromScout($sheetExport);
+            }
         }
 
         $this->close($sheetExport);
@@ -421,6 +426,25 @@ class Sheet
     public function fromGenerator(FromGenerator $sheetExport)
     {
         $this->appendRows($sheetExport->generator(), $sheetExport);
+    }
+
+    /**
+     * @param FromScout $sheetExport
+     */
+    public function fromScout(FromScout $sheetExport)
+    {
+        $chunkSize = $this->getChunkSize($sheetExport);
+
+        $paginator = $sheetExport->scout()->paginate($chunkSize);
+        $this->appendRows($paginator->items(), $sheetExport);
+
+        $pageCount = $paginator->lastPage();
+        if ($pageCount > 1) {
+            for ($page = 2; $page <= $pageCount; ++$page) {
+                $paginator = $sheetExport->scout()->paginate($chunkSize, 'page', $page);
+                $this->appendRows($paginator->items(), $sheetExport);
+            }
+        }
     }
 
     /**
