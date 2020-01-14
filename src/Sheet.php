@@ -433,18 +433,14 @@ class Sheet
      */
     public function fromScout(FromScout $sheetExport)
     {
-        $chunkSize = $this->getChunkSize($sheetExport);
+        $page = 1;
 
-        $paginator = $sheetExport->scout()->paginate($chunkSize);
-        $this->appendRows($paginator->items(), $sheetExport);
-
-        $pageCount = $paginator->lastPage();
-        if ($pageCount > 1) {
-            for ($page = 2; $page <= $pageCount; ++$page) {
-                $paginator = $sheetExport->scout()->paginate($chunkSize, 'page', $page);
-                $this->appendRows($paginator->items(), $sheetExport);
-            }
-        }
+        do {
+            $paginator = $sheetExport->scout()->paginate($this->getChunkSize($sheetExport), 'page', $page);
+            $collection = $sheetExport->interactWithChunk($paginator->items());
+            $this->appendRows($collection, $sheetExport);
+            ++$page;
+        } while ($page <= $paginator->lastPage());
     }
 
     /**
