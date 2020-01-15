@@ -10,4 +10,11 @@ interface FromScout
      * @return Builder
      */
     public function scout();
+
+    /**
+     * @param iterable $chunk
+     *
+     * @return iterable
+     */
+    public function interactWithChunk($chunk);
 }

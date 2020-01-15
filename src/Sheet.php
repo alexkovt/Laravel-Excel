@@ -437,10 +437,7 @@ class Sheet
 
         do {
             $paginator = $sheetExport->scout()->paginate($this->getChunkSize($sheetExport), 'page', $page);
-            $collection = method_exists($sheetExport, 'interactWithChunk')
-                ? $sheetExport->interactWithChunk($paginator->items())
-                : $paginator->items();
-            $this->appendRows($collection, $sheetExport);
+            $this->appendRows($sheetExport->interactWithChunk($paginator->items()), $sheetExport);
             ++$page;
         } while ($page <= $paginator->lastPage());
     }
