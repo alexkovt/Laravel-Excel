@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\FromScout;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\BeforeSheet;
@@ -208,6 +209,10 @@ class Sheet
             if ($sheetExport instanceof FromIterator) {
                 $this->fromIterator($sheetExport);
             }
+
+            if ($sheetExport instanceof FromScout) {
+                $this->fromScout($sheetExport);
+            }
         }
 
         $this->close($sheetExport);
@@ -400,6 +405,20 @@ class Sheet
     public function fromIterator(FromIterator $sheetExport)
     {
         $this->appendRows($sheetExport->iterator(), $sheetExport);
+    }
+
+    /**
+     * @param FromScout $sheetExport
+     */
+    public function fromScout(FromScout $sheetExport)
+    {
+        $page = 1;
+
+        do {
+            $paginator = $sheetExport->scout()->paginate($this->getChunkSize($sheetExport), 'page', $page);
+            $this->appendRows($sheetExport->interactWithChunk($paginator->items()), $sheetExport);
+            ++$page;
+        } while ($page <= $paginator->lastPage());
     }
 
     /**
